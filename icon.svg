@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Composer dock insight">
+  <rect x="1.5" y="1.5" width="29" height="29" rx="8.5" fill="#4d6bfe"/>
+  <rect x="7" y="17" width="4" height="8" rx="1.4" fill="#ffffff" opacity="0.75"/>
+  <rect x="14" y="12" width="4" height="13" rx="1.4" fill="#ffffff" opacity="0.9"/>
+  <rect x="21" y="7" width="4" height="18" rx="1.4" fill="#ffffff"/>
+  <circle cx="23" cy="23.5" r="3.2" fill="none" stroke="#4d6bfe" stroke-width="1.6"/>
+</svg>

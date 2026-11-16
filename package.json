@@ -1,0 +1,54 @@
+{
+  "name": "dsh-dock-insight",
+  "version": "0.4.2",
+  "description": "Dock Vitals — a composer-dock readout for context occupancy, session stats and token usage, with a click-open breakdown panel.",
+  "license": "MIT",
+  "author": "zkw90274-dot",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zkw90274-dot/dsh-dock-insight.git"
+  },
+  "homepage": "https://github.com/zkw90274-dot/dsh-dock-insight",
+  "bugs": {
+    "url": "https://github.com/zkw90274-dot/dsh-dock-insight/issues"
+  },
+  "type": "module",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "composer",
+    "context",
+    "token-usage",
+    "session-stats",
+    "vitals"
+  ],
+  "main": "./index.js",
+  "icon": "./icon.svg",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": []
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

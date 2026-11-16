@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Dock Vitals",
+    "description": "Adds a compact readout to the composer dock: context occupancy with its system/tools/conversation split, session stats (model time, tool time, average first token, output speed), token usage (cache hit, uncached input, cache read, output) and the signed-in account's remaining wallet balance. Click the readout to open the breakdown panel."
+  }
+}
