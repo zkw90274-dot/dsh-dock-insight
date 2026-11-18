@@ -114,8 +114,6 @@ leaves the cell as `—` rather than a zero.
   it too), while a per-token figure would need a rate table the Host does not
   publish. Reporting either as "this session cost" would be a number that looks
   precise and is not, so the cell was dropped instead.
-- **No turn/step counter.** The stock session-stats dialog already carries it;
-  this panel stays on the four timing readings.
 
 ## Figures that are estimates
 
