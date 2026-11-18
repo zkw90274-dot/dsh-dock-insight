@@ -4,6 +4,14 @@ A compact readout in the composer dock, plus a click-open panel that explains
 the numbers: context occupancy with its composition, session timing, and token
 usage.
 
+## Screenshots
+
+![Panel](assets/screenshot-panel.png)
+
+![Dock readout, mid-reply](assets/screenshot-dock.png)
+
+![Scrolled panel](assets/screenshot-scroll.png)
+
 ## What it shows
 
 **Dock readout** — a 26px composition swatch (system prompt / tool definitions /
