@@ -1,6 +1,6 @@
 {
   "name": "dsh-dock-insight",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Dock Vitals — a composer-dock readout for context occupancy, session stats and token usage, with a click-open breakdown panel.",
   "license": "MIT",
   "author": "zkw90274-dot",

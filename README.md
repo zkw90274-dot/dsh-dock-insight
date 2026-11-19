@@ -80,12 +80,22 @@ plugin brings the pills straight back), and it keeps the slot's own anchor for
 this entry — that anchor is what carries `.dsdi-root` — while hiding every
 sibling anchor and the host context meter next to it.
 
-The rule is the paint-time half. The mount effect does the same walk in script
-(`hideSiblings`), because the slot renderer is free to nest entries inside a
-wrapper: from our own anchor it climbs to `[data-composer-dock]` and hides, at
-every level, the children that contain no `.dsdi-root`, restoring each one's
-inline `display` on unmount. That covers the shape `:has()` cannot reach, and
-the CSS still wins the first paint before the effect runs.
+The rule is the paint-time half. The mount effect does the same walk in script,
+because the slot renderer is free to nest entries inside a wrapper: from our own
+anchor it climbs to `[data-composer-dock]` and hides, at every level, the
+children that contain no `.dsdi-root`, restoring each one's inline `display` on
+unmount. That covers the shape `:has()` cannot reach, and the CSS still wins the
+first paint before the effect runs.
+
+The sweep is not a one-shot. A conversation switch rebuilds the dock, and the
+host mounts a pill only once it has data, so a reading inserted *after* the
+first sweep would otherwise sit visible beside the trigger. The effect therefore
+watches the dock (and its parent, for the case where the shell replaces the dock
+element itself) with a `MutationObserver` and re-runs the sweep on every child
+mutation; it re-attaches if the container changes, and gives up cleanly on
+unmount. Observing `childList` only — not attributes — keeps the sweep from
+triggering itself with its own `display` writes. `docs/stress-test.md` lists the
+shapes this was checked against.
 
 Slots have no removal API, so suppressing a sibling registration can only be
 done from the DOM — which is why this is DOM work rather than a slot call.

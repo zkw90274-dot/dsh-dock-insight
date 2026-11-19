@@ -516,33 +516,94 @@ window.__ModuleLoader__.load({
 `
 
     /**
-     * Hides the dock readings this panel replaces.
+     * Hides the dock readings this panel replaces, for as long as it is mounted.
      *
-     * The CSS rule below does the same thing at paint time, but only when a
-     * sibling really is a direct child of `[data-composer-dock]`; the slot
-     * renderer is free to nest entries inside a wrapper, so the effect walks
-     * up from our own anchor and hides, at every level, the children that do
-     * not contain `.dsdi-root`. The walk stops at the dock container, so no
-     * composer chrome above it is ever touched, and every hidden element is
-     * restored on unmount.
+     * One sweep at mount is not enough. The dock is rebuilt when the Session
+     * changes, and the host mounts a reading only once it has data, so a pill
+     * that appears a moment after us would sit visible beside our own trigger.
+     * The sweep therefore repeats whenever the dock's child list changes, and
+     * it re-attaches if React replaces the container underneath us.
+     *
+     * The walk goes up from our own anchor and hides, at every level, the
+     * children that do not contain `.dsdi-root`; it stops at the dock container,
+     * so composer chrome above it is never touched. Every hidden element gets
+     * its original `display` back when we unmount.
      */
-    function hideSiblings(root) {
-      if (root === null || root === undefined || root.parentElement === null) return undefined
-      const restored = []
-      let node = root
-      while (node !== null && node.parentElement !== null) {
-        const parent = node.parentElement
-        for (const sibling of Array.from(parent.children)) {
-          if (sibling === node) continue
-          if (sibling.querySelector('.dsdi-root') !== null) continue
-          restored.push([sibling, sibling.style.display])
-          sibling.style.display = 'none'
+    function createDockIsolation(getRoot) {
+      const hidden = new Map()
+      let observer = null
+      let observed = null
+      let retryTimer = null
+      let retries = 0
+
+      const sweep = () => {
+        const root = getRoot()
+        if (root === null || root === undefined || root.parentElement === null) return null
+        let node = root
+        let container = null
+        while (node.parentElement !== null) {
+          const parent = node.parentElement
+          for (const sibling of Array.from(parent.children)) {
+            if (sibling === node) continue
+            if (sibling.querySelector('.dsdi-root') !== null) continue
+            if (!hidden.has(sibling)) hidden.set(sibling, sibling.style.display)
+            if (sibling.style.display !== 'none') sibling.style.display = 'none'
+          }
+          if (parent.hasAttribute('data-composer-dock')) {
+            container = parent
+            break
+          }
+          node = parent
         }
-        if (parent.hasAttribute('data-composer-dock')) break
-        node = parent
+        for (const element of Array.from(hidden.keys())) {
+          if (element.isConnected === false) hidden.delete(element)
+        }
+        return container
       }
-      return () => {
-        for (const [element, display] of restored) element.style.display = display
+
+      const attach = () => {
+        const container = sweep()
+        if (container === null) {
+          // The entry can be committed before the shell attaches it; retry a
+          // few times rather than leave the dock uncovered.
+          if (retryTimer === null && retries < 8) {
+            retries += 1
+            retryTimer = setTimeout(() => {
+              retryTimer = null
+              attach()
+            }, 250)
+          }
+          return
+        }
+        if (container === observed && observer !== null) return
+        if (observer !== null) observer.disconnect()
+        observed = container
+        if (typeof MutationObserver === 'function') {
+          // childList only: the sweep writes `style.display`, and observing
+          // attributes would make it feed its own callback. The container's
+          // parent is watched too, because a shell rebuild replaces the dock
+          // element itself and the old node then reports nothing.
+          observer = new MutationObserver(() => attach())
+          observer.observe(container, { childList: true, subtree: true })
+          if (container.parentElement !== null) {
+            observer.observe(container.parentElement, { childList: true, subtree: true })
+          }
+        }
+      }
+
+      return {
+        start() {
+          attach()
+        },
+        stop() {
+          if (retryTimer !== null) clearTimeout(retryTimer)
+          retryTimer = null
+          if (observer !== null) observer.disconnect()
+          observer = null
+          observed = null
+          for (const [element, display] of hidden) element.style.display = display
+          hidden.clear()
+        },
       }
     }
 
@@ -617,9 +678,10 @@ window.__ModuleLoader__.load({
 
       useEffect(() => {
         store.setAnchor(rootRef.current)
-        const restore = hideSiblings(rootRef.current)
+        const isolation = createDockIsolation(() => rootRef.current)
+        isolation.start()
         return () => {
-          if (typeof restore === 'function') restore()
+          isolation.stop()
           store.setAnchor(null)
           store.setOpen(false)
         }
